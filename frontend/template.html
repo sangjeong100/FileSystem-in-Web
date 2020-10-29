@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>FileSystem</title>
+</head>
+
+<body>
+  <hr />
+  <div class="container">
+    <div>
+      <button type="button" id="createDirBtn">폴더 생성</button>
+      <button type="button" id="createFileBtn">파일 생성</button>
+    </div>
+    <hr />
+    <table style="text-align: center;">
+      <thead>
+        <th>Name</th>
+        <th></th>
+        <th>file size</th>
+        <th>Modification date</th>
+      </thead>
+      <tbody>
+        <tr class="dir">
+          <td onclick="cd(this)">..</td>
+          <td> </td>
+          <td> </td>
+          <td> </td>
+        </tr>
+        files
+      </tbody>
+    </table>
+    <div>
+      <div>
+        <h3 id="MSG"></h3>
+      </div>
+      <div id="editFileModal" class="modal" style="width:100%">
+        <div class="modal-content" style="width:27%">
+          <span>파일 편집<span class="close" id="editFileClose">&times;</span></span>
+          <form action="http://localhost:3000/editfile" method="POST">
+            <input name="title" type="text" placeholder="title" style="width:80%;margin-bottom:7px;" value="" id="edit_title"/> <br />
+            <textarea name="description" type="text" placeholder="description" style="width:80%;height:200px;" id="edit_textarea"></textarea> <br />
+            <input type="submit" value="편집저장"/>
+          </form>
+        </div>
+      </div>
+
+      <div id="createDirModal" class="modal" style="width:100%">    
+        <div class="modal-content" style="width:27%">
+          <span>폴더 생성<span class="close" id="createDirClose">&times;</span></span>
+          <form action="http://localhost:3000/mkdir" method="POST">
+            <input name="title" type="text" placeholder="title" style="width:80%"/> <br />
+            <input type="submit" value="mkdir"/>
+          </form>
+        </div>
+      </div>
+
+      <div id="renameModal" class="modal" style="width:100%">
+        <div class="modal-content" style="width:27%">
+          Rename
+          <span class="close" id="renameClose">&times;</span>
+          <form action="http://localhost:3000/rename" method="POST">
+            <input name="old_title" type="hidden" value="" />
+            <input name="title" type="text" value="" style="width:80%"/> <br />
+            <input type="submit" value="Rename"/>
+          </form>
+        </div>
+      </div>
+
+      <script type="text/javascript">
+
+        /*read file*/
+        function readfile(link) {
+          const form = document.createElement('form');
+          form.method = 'post';
+          form.action = "http://localhost:3000/readfile"
+          const hiddenField = document.createElement('input');
+          hiddenField.type = 'hidden';
+          hiddenField.name = 'file_name';
+          hiddenField.value = link.textContent;
+          form.appendChild(hiddenField);
+          document.body.appendChild(form);
+          form.submit();
+        }
+        /*rename */
+        function rename(link) {
+          console.log(link.value);
+          const form = document.createElement('form');
+          form.method = 'post';
+          form.action = "http://localhost:3000/rename";
+          const hiddenField = document.createElement('input');
+          hiddenField.type = 'hidden';
+          hiddenField.name = 'dir_name';
+          hiddenField.value = link.value;
+          form.appendChild(hiddenField);
+          document.body.appendChild(form);
+          form.submit();
+        }
+
+        /*editfile */
+        function editfile(link) {
+          const form = document.createElement('form');
+          form.method = 'post';
+          form.action = "http://localhost:3000/editfile";
+          const hiddenField = document.createElement('input');
+          hiddenField.type = 'hidden';
+          hiddenField.name = 'file_name';
+          hiddenField.value = link.textContent;
+          form.appendChild(hiddenField);
+          document.body.appendChild(form);
+          form.submit();
+        }
+
+        /*rmFile */
+        function rmFile(link) {
+          const form = document.createElement('form');
+          form.method = 'post';
+          form.action = "http://localhost:3000/rmFile";
+          const hiddenField = document.createElement('input');
+          hiddenField.type = 'hidden';
+          hiddenField.name = 'file_name';
+          hiddenField.value = link.value;
+          form.appendChild(hiddenField);
+          document.body.appendChild(form);
+          form.submit();
+        }
+      
+        /*rmdir*/
+        function rmdir(link) {        
+          const form = document.createElement('form');
+          form.method = 'post';
+          form.action = "http://localhost:3000/rmdir";
+          const hiddenField = document.createElement('input');
+          hiddenField.type = 'hidden';
+          hiddenField.name = 'dir_name';
+          hiddenField.value = link.value;
+          form.appendChild(hiddenField);
+          document.body.appendChild(form);
+          form.submit();
+        }
+
+        /*cd*/
+        function cd(link){
+          const form = document.createElement('form');
+          form.method = 'post';
+          form.action = "http://localhost:3000/cd"
+          const hiddenField = document.createElement('input');
+          hiddenField.type = 'hidden';
+          hiddenField.name = 'file_name';
+          hiddenField.value = link.textContent;
+          console.log(link.textContent);
+          form.appendChild(hiddenField);
+          document.body.appendChild(form);
+          form.submit();
+        }
+
+        /* editFile Modal 관련 JS*/
+        var createFileBtn = document.querySelector("#createFileBtn");
+        createFileBtn.onclick = function () {
+          var editFileModal = document.querySelector('#editFileModal');  //파일 생성 modal 
+          editFileModal.style.display = "block";
+        };
+        var editClose = document.querySelector("#editFileClose");
+        editClose.onclick = function () {
+          var editFileModal = document.querySelector('#editFileModal');  //파일 생성 modal 
+          editFileModal.style.display = "none";
+          editFileModal.childNodes[1].childNodes[3].childNodes[1].value = ""; //title 초기화
+          editFileModal.childNodes[1].childNodes[3].childNodes[5].value = ""; //description 초기화
+        }
+
+      /* create DirModal 관련 JS*/
+        var createDirBtn = document.querySelector("#createDirBtn");
+        createDirBtn.onclick = function () {
+          var createDirModal = document.querySelector('#createDirModal');  //파일 생성 modal 
+          createDirModal.style.display = "block";
+        };
+        var createDirClose = document.querySelector("#createDirClose");
+        createDirClose.onclick = function () {
+          var createDirModal = document.querySelector('#createDirModal');  //파일 생성 modal 
+          createDirModal.style.display = "none";
+        }     
+
+        /* rename Modal 관련 JS*/
+        function rename(text) {
+          console.log(text.value);
+          var renameModal = document.querySelector('#renameModal');
+          renameModal.childNodes[1].childNodes[3].childNodes[1].value = text.value; //old_title 저장
+          renameModal.childNodes[1].childNodes[3].childNodes[3].value = text.value; //title 수정 form
+          renameModal.style.display = "block";
+        }
+        var renameClose = document.querySelector("#renameClose");
+        renameClose.onclick = function () {
+          var renameModal = document.querySelector('#renameModal');  //파일 생성 modal 
+          renameModal.style.display = "none";
+        }
+
+
+      </script>
+
+</body>
+<style>
+  /* The Modal (background) */
+  .modal {
+    display: none;
+    /* Hidden by default */
+    position: fixed;
+    /* Stay in place */
+    z-index: 1;
+    /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%;
+    /* Full width */
+    height: 100%;
+    /* Full height */
+    overflow: auto;
+    /* Enable scroll if needed */
+    background-color: rgb(0, 0, 0);
+    /* Fallback color */
+    background-color: rgba(0, 0, 0, 0.4);
+    /* Black w/ opacity */
+  }
+
+  /* Modal Content/Box */
+  .modal-content {
+    background-color: #fefefe;
+    margin: 15% auto;
+    /* 15% from the top and centered */
+    padding: 20px;
+    border: 1px solid #888;
+    width: 50%;
+    /* Could be more or less, depending on screen size */
+  }
+
+  /* The Close Button */
+  .close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+  }
+
+  .close:hover,
+  .close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  hr{
+    margin: 0em;
+    border-width: 1px;
+    color: black;
+  }
+
+  table {
+    border-collapse: collapse;
+    border: 1.5px solid #444444;
+    font-size: small;
+    width: 800px;
+  }
+  tr {
+    border: 1.5px solid #444444;
+  }
+  .file{
+    background-color:gainsboro;
+  }
+  .dir{
+    background-color:gray;
+  }
+</style>
+
+</html>
